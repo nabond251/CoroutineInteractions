@@ -2,7 +2,7 @@
 using System.Threading.Channels;
 
 var requestChannel = Channel.CreateUnbounded<CommandLineInstruction>();
-var coroutine = CommandLineCoroutines.GreetAsync(requestChannel.Writer);
+var coroutine = WizardCoroutines.ReadQuantity(requestChannel.Writer);
 
 await foreach (var instruction in requestChannel.Reader.ReadAllAsync())
 {
