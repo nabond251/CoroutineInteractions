@@ -2,6 +2,7 @@
 
 namespace CoroutineInteractions;
 
-public record class ReadLine(
-    ChannelReader<string> ResponseReader) :
-    Correspondance<object?, string>(null, ResponseReader);
+public record class ReadLine() :
+    Correspondance<object?, string?>(
+        null,
+        Channel.CreateUnbounded<string?>());
