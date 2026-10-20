@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="CoroutineInteractions.Tests/CoroutineInteractions.Tests.csproj" Id="1cfb1fa1-6c00-44e9-84d1-42050fe30e60" />
   <Project Path="CoroutineInteractions/CoroutineInteractions.csproj" />
 </Solution>
