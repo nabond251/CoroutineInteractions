@@ -5,9 +5,10 @@ var requestChannel = Channel.CreateUnbounded<CommandLineInstruction>();
 
 var coroutine = Task.Run(async () =>
 {
-    var count = await WizardCoroutines.ReadQuantity(requestChannel.Writer);
-    var date = await WizardCoroutines.ReadDate(requestChannel.Writer);
+    var reservation = await WizardCoroutines.ReadReservationRequestAsync(
+        requestChannel.Writer);
     requestChannel.Writer.Complete();
+    return reservation;
 });
 
 await foreach (var instruction in requestChannel.Reader.ReadAllAsync())
@@ -27,4 +28,4 @@ await foreach (var instruction in requestChannel.Reader.ReadAllAsync())
         });
 }
 
-await coroutine;
+Console.WriteLine(await coroutine);

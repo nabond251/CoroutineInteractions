@@ -4,7 +4,7 @@ namespace CoroutineInteractions;
 
 public static class WizardCoroutines
 {
-    public static async Task<int> ReadQuantity(
+    public static async Task<int> ReadQuantityAsync(
         ChannelWriter<CommandLineInstruction> requestWriter)
     {
         await requestWriter.WriteAsync(
@@ -21,11 +21,11 @@ public static class WizardCoroutines
         else
         {
             await requestWriter.WriteAsync(new WriteLine("Not an integer."));
-            return await ReadQuantity(requestWriter);
+            return await ReadQuantityAsync(requestWriter);
         }
     }
 
-    public static async Task<DateTimeOffset> ReadDate(
+    public static async Task<DateTimeOffset> ReadDateAsync(
         ChannelWriter<CommandLineInstruction> requestWriter)
     {
         await requestWriter.WriteAsync(
@@ -42,11 +42,11 @@ public static class WizardCoroutines
         else
         {
             await requestWriter.WriteAsync(new WriteLine("Not a date."));
-            return await ReadDate(requestWriter);
+            return await ReadDateAsync(requestWriter);
         }
     }
 
-    public static async Task<string?> ReadName(
+    public static async Task<string?> ReadNameAsync(
         ChannelWriter<CommandLineInstruction> requestWriter)
     {
         await requestWriter.WriteAsync(
@@ -57,7 +57,7 @@ public static class WizardCoroutines
         return await readLineRequest.Responses.Reader.ReadAsync();
     }
 
-    public static async Task<string?> ReadEmail(
+    public static async Task<string?> ReadEmailAsync(
         ChannelWriter<CommandLineInstruction> requestWriter)
     {
         await requestWriter.WriteAsync(
@@ -66,5 +66,15 @@ public static class WizardCoroutines
         var readLineRequest = new ReadLine();
         await requestWriter.WriteAsync(readLineRequest);
         return await readLineRequest.Responses.Reader.ReadAsync();
+    }
+
+    public static async Task<Reservation> ReadReservationRequestAsync(
+        ChannelWriter<CommandLineInstruction> requestWriter)
+    {
+        var count = await ReadQuantityAsync(requestWriter);
+        var date = await ReadDateAsync(requestWriter);
+        var name = await ReadNameAsync(requestWriter);
+        var email = await ReadEmailAsync(requestWriter);
+        return new(date, name, email, count);
     }
 }
