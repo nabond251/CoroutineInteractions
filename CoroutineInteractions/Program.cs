@@ -2,7 +2,8 @@
 using System.Threading.Channels;
 
 var requestChannel = Channel.CreateUnbounded<CommandLineInstruction>();
-var coroutine = WizardCoroutines.ReadQuantity(requestChannel.Writer);
+var countCoroutine = WizardCoroutines.ReadQuantity(requestChannel.Writer);
+var dateCoroutine = WizardCoroutines.ReadQuantity(requestChannel.Writer);
 
 await foreach (var instruction in requestChannel.Reader.ReadAllAsync())
 {
@@ -21,4 +22,5 @@ await foreach (var instruction in requestChannel.Reader.ReadAllAsync())
         });
 }
 
-await coroutine;
+var count = await countCoroutine;
+var date = await dateCoroutine;
