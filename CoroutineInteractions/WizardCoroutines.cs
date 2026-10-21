@@ -45,4 +45,26 @@ public static class WizardCoroutines
             return await ReadDate(requestWriter);
         }
     }
+
+    public static async Task<string?> ReadName(
+        ChannelWriter<CommandLineInstruction> requestWriter)
+    {
+        await requestWriter.WriteAsync(
+            new WriteLine("Please enter your name:"));
+
+        var readLineRequest = new ReadLine();
+        await requestWriter.WriteAsync(readLineRequest);
+        return await readLineRequest.Responses.Reader.ReadAsync();
+    }
+
+    public static async Task<string?> ReadEmail(
+        ChannelWriter<CommandLineInstruction> requestWriter)
+    {
+        await requestWriter.WriteAsync(
+            new WriteLine("Please enter your email address:"));
+
+        var readLineRequest = new ReadLine();
+        await requestWriter.WriteAsync(readLineRequest);
+        return await readLineRequest.Responses.Reader.ReadAsync();
+    }
 }
