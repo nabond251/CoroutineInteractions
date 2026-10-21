@@ -16,7 +16,6 @@ public static class WizardCoroutines
 
         if (int.TryParse(l, out var dinerCount))
         {
-            requestWriter.Complete();
             return dinerCount;
         }
         else
@@ -38,7 +37,6 @@ public static class WizardCoroutines
 
         if (DateTimeOffset.TryParse(l, out var dt))
         {
-            requestWriter.Complete();
             return dt;
         }
         else
