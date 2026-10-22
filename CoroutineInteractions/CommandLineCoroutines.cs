@@ -1,11 +1,9 @@
-﻿using System.Threading.Channels;
-
-namespace CoroutineInteractions;
+﻿namespace CoroutineInteractions;
 
 public static class CommandLineCoroutines
 {
     public static async Task GreetAsync(
-        ChannelWriter<CommandLineInstruction> requestWriter)
+        ICommandLineInstructionWriter requestWriter)
     {
         await requestWriter.WriteAsync(
             new WriteLine("Please enter your name."));
@@ -15,7 +13,5 @@ public static class CommandLineCoroutines
         var s = await readLineRequest.Responses.Reader.ReadAsync();
 
         await requestWriter.WriteAsync(new WriteLine($"Hello, {s}!"));
-
-        requestWriter.Complete();
     }
 }

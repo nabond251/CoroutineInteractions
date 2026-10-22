@@ -1,11 +1,9 @@
-﻿using System.Threading.Channels;
-
-namespace CoroutineInteractions;
+﻿namespace CoroutineInteractions;
 
 public static class WizardCoroutines
 {
     public static async Task<int> ReadQuantityAsync(
-        ChannelWriter<CommandLineInstruction> requestWriter)
+        ICommandLineInstructionWriter requestWriter)
     {
         await requestWriter.WriteAsync(
             new WriteLine("Please enter number of diners:"));
@@ -26,7 +24,7 @@ public static class WizardCoroutines
     }
 
     public static async Task<DateTimeOffset> ReadDateAsync(
-        ChannelWriter<CommandLineInstruction> requestWriter)
+        ICommandLineInstructionWriter requestWriter)
     {
         await requestWriter.WriteAsync(
             new WriteLine("Please enter your desired date:"));
@@ -47,7 +45,7 @@ public static class WizardCoroutines
     }
 
     public static async Task<string?> ReadNameAsync(
-        ChannelWriter<CommandLineInstruction> requestWriter)
+        ICommandLineInstructionWriter requestWriter)
     {
         await requestWriter.WriteAsync(
             new WriteLine("Please enter your name:"));
@@ -58,7 +56,7 @@ public static class WizardCoroutines
     }
 
     public static async Task<string?> ReadEmailAsync(
-        ChannelWriter<CommandLineInstruction> requestWriter)
+        ICommandLineInstructionWriter requestWriter)
     {
         await requestWriter.WriteAsync(
             new WriteLine("Please enter your email address:"));
@@ -69,7 +67,7 @@ public static class WizardCoroutines
     }
 
     public static async Task<Reservation> ReadReservationRequestAsync(
-        ChannelWriter<CommandLineInstruction> requestWriter)
+        ICommandLineInstructionWriter requestWriter)
     {
         var count = await ReadQuantityAsync(requestWriter);
         var date = await ReadDateAsync(requestWriter);

@@ -6,7 +6,7 @@ var requestChannel = Channel.CreateUnbounded<CommandLineInstruction>();
 var coroutine = Task.Run(async () =>
 {
     var reservation = await WizardCoroutines.ReadReservationRequestAsync(
-        requestChannel.Writer);
+        new CommandLineInstructionWriter(requestChannel.Writer));
     requestChannel.Writer.Complete();
     return reservation;
 });

@@ -11,7 +11,8 @@ public class ClcTests
     public async Task GreetsUserAsync(string username)
     {
         var requestChannel = Channel.CreateUnbounded<CommandLineInstruction>();
-        var coroutine = CommandLineCoroutines.GreetAsync(requestChannel.Writer);
+        var writer = new CommandLineInstructionWriter(requestChannel.Writer);
+        var coroutine = CommandLineCoroutines.GreetAsync(writer);
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
         Assert.True(await sut.MoveNextAsync());
@@ -37,6 +38,7 @@ public class ClcTests
             writeLine => Assert.Equal(
                 $"Hello, {username}!", writeLine.Request));
 
+        requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());
     }
 }
