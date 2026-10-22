@@ -1,4 +1,5 @@
-﻿using System.Threading.Channels;
+﻿using CoroutineInteractions.ReservationsApi;
+using System.Threading.Channels;
 
 namespace CoroutineInteractions;
 

@@ -3,8 +3,7 @@
 namespace CoroutineInteractions;
 
 public class WizardInstructionWriter(
-    ChannelWriter<WizardInstruction> channelWriter) :
-    ICommandLineInstructionWriter, IReservationsApiInstructionWriter
+    ChannelWriter<WizardInstruction> channelWriter) : IWizardInstructionWriter
 {
     public async ValueTask WriteAsync(ReadLine readLine) =>
         await channelWriter.WriteAsync((CommandLineInstruction)readLine);

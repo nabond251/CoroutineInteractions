@@ -3,7 +3,7 @@ using System.Threading.Channels;
 
 namespace CoroutineInteractions;
 
-public record class GetSlots() :
-    Correspondance<object?, ICollection<Slot>>(
-        null,
+public record class GetSlots(DateTimeOffset slotDate) :
+    Correspondance<DateTimeOffset, ICollection<Slot>>(
+        slotDate,
         Channel.CreateUnbounded<ICollection<Slot>>());

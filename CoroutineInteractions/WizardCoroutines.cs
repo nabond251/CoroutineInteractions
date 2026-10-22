@@ -1,4 +1,6 @@
-﻿namespace CoroutineInteractions;
+﻿using CoroutineInteractions.ReservationsApi;
+
+namespace CoroutineInteractions;
 
 public static class WizardCoroutines
 {
@@ -66,13 +68,35 @@ public static class WizardCoroutines
         return await readLineRequest.Responses.Reader.ReadAsync();
     }
 
-    public static async Task<Reservation> ReadReservationRequestAsync(
-        ICommandLineInstructionWriter requestWriter)
+    public static async Task TryReserveAsync(
+        IWizardInstructionWriter requestWriter)
     {
         var count = await ReadQuantityAsync(requestWriter);
         var date = await ReadDateAsync(requestWriter);
-        var name = await ReadNameAsync(requestWriter);
-        var email = await ReadEmailAsync(requestWriter);
-        return new(date, name, email, count);
+
+        var getSlotsRequest = new GetSlots(date);
+        await requestWriter.WriteAsync(getSlotsRequest);
+        var availableSeats =
+            (await getSlotsRequest.Responses.Reader.ReadAsync())
+            .Sum(s => s.SeatsLeft);
+
+        if (availableSeats < count)
+        {
+            await requestWriter.WriteAsync(
+                new WriteLine($"Only {availableSeats} remaining seats."));
+        }
+        else
+        {
+            var name = await ReadNameAsync(requestWriter);
+            var email = await ReadEmailAsync(requestWriter);
+            var reservation = new Reservation
+            {
+                Date = date,
+                Name = name,
+                Email = email,
+                Quantity = count,
+            };
+            await requestWriter.WriteAsync(new PostReservation(reservation));
+        }
     }
 }
