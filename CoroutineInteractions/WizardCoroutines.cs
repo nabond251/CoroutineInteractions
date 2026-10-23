@@ -5,14 +5,10 @@ namespace CoroutineInteractions;
 public static class WizardCoroutines
 {
     public static async Task<int> ReadQuantityAsync(
-        ICommandLineInstructionWriter requestWriter)
+        ICommandLine commandLine)
     {
-        await requestWriter.WriteAsync(
-            new WriteLine("Please enter number of diners:"));
-
-        var readLineRequest = new ReadLine();
-        await requestWriter.WriteAsync(readLineRequest);
-        var l = await readLineRequest.Responses.Reader.ReadAsync();
+        await commandLine.WriteLineAsync("Please enter number of diners:");
+        var l = await commandLine.ReadLineAsync();
 
         if (int.TryParse(l, out var dinerCount))
         {
@@ -20,8 +16,8 @@ public static class WizardCoroutines
         }
         else
         {
-            await requestWriter.WriteAsync(new WriteLine("Not an integer."));
-            return await ReadQuantityAsync(requestWriter);
+            await commandLine.WriteLineAsync("Not an integer.");
+            return await ReadQuantityAsync(commandLine);
         }
     }
 
@@ -69,9 +65,10 @@ public static class WizardCoroutines
     }
 
     public static async Task TryReserveAsync(
+        ICommandLine commandLine,
         IWizardInstructionWriter requestWriter)
     {
-        var count = await ReadQuantityAsync(requestWriter);
+        var count = await ReadQuantityAsync(commandLine);
         var date = await ReadDateAsync(requestWriter);
 
         var getSlotsRequest = new GetSlots(date);

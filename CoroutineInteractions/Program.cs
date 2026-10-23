@@ -6,8 +6,9 @@ var requestChannel = Channel.CreateUnbounded<WizardInstruction>();
 
 var coroutine = Task.Run(async () =>
 {
-    await WizardCoroutines.TryReserveAsync(
-        new WizardInstructionWriter(requestChannel.Writer));
+    var writer = new WizardInstructionWriter(requestChannel.Writer);
+    var cli = new CoroutineCommandLine(writer);
+    await WizardCoroutines.TryReserveAsync(cli, writer);
     requestChannel.Writer.Complete();
 });
 
