@@ -11,7 +11,8 @@ public class WizardTests
         var requestChannel = Channel.CreateUnbounded<WizardInstruction>();
         var writer = new WizardInstructionWriter(requestChannel.Writer);
         var cli = new CoroutineCommandLine(writer);
-        var coroutine = WizardCoroutines.TryReserveAsync(cli, writer);
+        var api = new CoroutineReservationsApi(writer);
+        var coroutine = WizardCoroutines.TryReserveAsync(cli, api);
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
         Assert.True(await sut.MoveNextAsync());
@@ -165,7 +166,8 @@ public class WizardTests
         var requestChannel = Channel.CreateUnbounded<WizardInstruction>();
         var writer = new WizardInstructionWriter(requestChannel.Writer);
         var cli = new CoroutineCommandLine(writer);
-        var coroutine = WizardCoroutines.TryReserveAsync(cli, writer);
+        var api = new CoroutineReservationsApi(writer);
+        var coroutine = WizardCoroutines.TryReserveAsync(cli, api);
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
         Assert.True(await sut.MoveNextAsync());

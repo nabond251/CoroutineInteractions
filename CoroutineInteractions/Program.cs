@@ -8,7 +8,8 @@ var coroutine = Task.Run(async () =>
 {
     var writer = new WizardInstructionWriter(requestChannel.Writer);
     var cli = new CoroutineCommandLine(writer);
-    await WizardCoroutines.TryReserveAsync(cli, writer);
+    var api = new CoroutineReservationsApi(writer);
+    await WizardCoroutines.TryReserveAsync(cli, api);
     requestChannel.Writer.Complete();
 });
 

@@ -54,21 +54,19 @@ public static class WizardCoroutines
 
     public static async Task TryReserveAsync(
         ICommandLine commandLine,
-        IWizardInstructionWriter requestWriter)
+        IReservationsApi reservationsApi)
     {
         var count = await ReadQuantityAsync(commandLine);
         var date = await ReadDateAsync(commandLine);
 
-        var getSlotsRequest = new GetSlots(date);
-        await requestWriter.WriteAsync(getSlotsRequest);
         var availableSeats =
-            (await getSlotsRequest.Responses.Reader.ReadAsync())
+            (await reservationsApi.GetSlotsAsync(date))
             .Sum(s => s.SeatsLeft);
 
         if (availableSeats < count)
         {
-            await requestWriter.WriteAsync(
-                new WriteLine($"Only {availableSeats} remaining seats."));
+            await commandLine.WriteLineAsync(
+                $"Only {availableSeats} remaining seats.");
         }
         else
         {
@@ -81,7 +79,7 @@ public static class WizardCoroutines
                 Email = email,
                 Quantity = count,
             };
-            await requestWriter.WriteAsync(new PostReservation(reservation));
+            await reservationsApi.PostReservationAsync(reservation);
         }
     }
 }
