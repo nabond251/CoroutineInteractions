@@ -22,14 +22,10 @@ public static class WizardCoroutines
     }
 
     public static async Task<DateTimeOffset> ReadDateAsync(
-        ICommandLineInstructionWriter requestWriter)
+        ICommandLine commandLine)
     {
-        await requestWriter.WriteAsync(
-            new WriteLine("Please enter your desired date:"));
-
-        var readLineRequest = new ReadLine();
-        await requestWriter.WriteAsync(readLineRequest);
-        var l = await readLineRequest.Responses.Reader.ReadAsync();
+        await commandLine.WriteLineAsync("Please enter your desired date:");
+        var l = await commandLine.ReadLineAsync();
 
         if (DateTimeOffset.TryParse(l, out var dt))
         {
@@ -37,31 +33,23 @@ public static class WizardCoroutines
         }
         else
         {
-            await requestWriter.WriteAsync(new WriteLine("Not a date."));
-            return await ReadDateAsync(requestWriter);
+            await commandLine.WriteLineAsync("Not a date.");
+            return await ReadDateAsync(commandLine);
         }
     }
 
     public static async Task<string?> ReadNameAsync(
-        ICommandLineInstructionWriter requestWriter)
+        ICommandLine commandLine)
     {
-        await requestWriter.WriteAsync(
-            new WriteLine("Please enter your name:"));
-
-        var readLineRequest = new ReadLine();
-        await requestWriter.WriteAsync(readLineRequest);
-        return await readLineRequest.Responses.Reader.ReadAsync();
+        await commandLine.WriteLineAsync("Please enter your name:");
+        return await commandLine.ReadLineAsync();
     }
 
     public static async Task<string?> ReadEmailAsync(
-        ICommandLineInstructionWriter requestWriter)
+        ICommandLine commandLine)
     {
-        await requestWriter.WriteAsync(
-            new WriteLine("Please enter your email address:"));
-
-        var readLineRequest = new ReadLine();
-        await requestWriter.WriteAsync(readLineRequest);
-        return await readLineRequest.Responses.Reader.ReadAsync();
+        await commandLine.WriteLineAsync("Please enter your email address:");
+        return await commandLine.ReadLineAsync();
     }
 
     public static async Task TryReserveAsync(
@@ -69,7 +57,7 @@ public static class WizardCoroutines
         IWizardInstructionWriter requestWriter)
     {
         var count = await ReadQuantityAsync(commandLine);
-        var date = await ReadDateAsync(requestWriter);
+        var date = await ReadDateAsync(commandLine);
 
         var getSlotsRequest = new GetSlots(date);
         await requestWriter.WriteAsync(getSlotsRequest);
@@ -84,8 +72,8 @@ public static class WizardCoroutines
         }
         else
         {
-            var name = await ReadNameAsync(requestWriter);
-            var email = await ReadEmailAsync(requestWriter);
+            var name = await ReadNameAsync(commandLine);
+            var email = await ReadEmailAsync(commandLine);
             var reservation = new Reservation
             {
                 Date = date,
