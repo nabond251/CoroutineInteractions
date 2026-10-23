@@ -12,7 +12,8 @@ public class ClcTests
     {
         var requestChannel = Channel.CreateUnbounded<CommandLineInstruction>();
         var writer = new CommandLineInstructionWriter(requestChannel.Writer);
-        var coroutine = CommandLineCoroutines.GreetAsync(writer);
+        var cli = new CoroutineCommandLine(writer);
+        var coroutine = CommandLineCoroutines.GreetAsync(cli);
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
         Assert.True(await sut.MoveNextAsync());

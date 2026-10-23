@@ -2,16 +2,10 @@
 
 public static class CommandLineCoroutines
 {
-    public static async Task GreetAsync(
-        ICommandLineInstructionWriter requestWriter)
+    public static async Task GreetAsync(ICommandLine commandLine)
     {
-        await requestWriter.WriteAsync(
-            new WriteLine("Please enter your name."));
-
-        var readLineRequest = new ReadLine();
-        await requestWriter.WriteAsync(readLineRequest);
-        var s = await readLineRequest.Responses.Reader.ReadAsync();
-
-        await requestWriter.WriteAsync(new WriteLine($"Hello, {s}!"));
+        await commandLine.WriteLineAsync("Please enter your name.");
+        var s = await commandLine.ReadLineAsync();
+        await commandLine.WriteLineAsync($"Hello, {s}!");
     }
 }
