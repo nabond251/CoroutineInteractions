@@ -27,5 +27,6 @@ public class ClcTests
 
         requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());
+        await coroutine;
     }
 }
