@@ -17,27 +17,13 @@ public class ClcTests
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
         Assert.True(await sut.MoveNextAsync());
-        var instruction = sut.Current;
-        instruction.Switch(
-            readLine => Assert.Fail(),
-            writeLine => Assert.Equal(
-                "Please enter your name.", writeLine.Request));
+        sut.Current.AssertWriteLine("Please enter your name.");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            async readLine =>
-            {
-                await readLine.Responses.Writer.WriteAsync(username);
-            },
-            writeLine => Assert.Fail());
+        sut.Current.AssertReadLine(username);
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            readLine => Assert.Fail(),
-            writeLine => Assert.Equal(
-                $"Hello, {username}!", writeLine.Request));
+        sut.Current.AssertWriteLine($"Hello, {username}!");
 
         requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());
