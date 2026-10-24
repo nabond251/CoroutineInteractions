@@ -163,73 +163,25 @@ public class WizardTests
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
         Assert.True(await sut.MoveNextAsync());
-        var instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                readLine => Assert.Fail(),
-                writeLine => Assert.Equal(
-                    "Please enter number of diners:", writeLine.Request)),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertWriteLine("Please enter number of diners:");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                async readLine =>
-                {
-                    await readLine.Responses.Writer.WriteAsync("four");
-                },
-                writeLine => Assert.Fail()),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertReadLine("four");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                readLine => Assert.Fail(),
-                writeLine => Assert.Equal(
-                    "Not an integer.", writeLine.Request)),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertWriteLine("Not an integer.");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                readLine => Assert.Fail(),
-                writeLine => Assert.Equal(
-                    "Please enter number of diners:", writeLine.Request)),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertWriteLine("Please enter number of diners:");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                async readLine =>
-                {
-                    await readLine.Responses.Writer.WriteAsync("4");
-                },
-                writeLine => Assert.Fail()),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertReadLine("4");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                readLine => Assert.Fail(),
-                writeLine => Assert.Equal(
-                    "Please enter your desired date:", writeLine.Request)),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertWriteLine("Please enter your desired date:");
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                async readLine =>
-                {
-                    await readLine.Responses.Writer.WriteAsync("2017-11-25 18:30:00Z");
-                },
-                writeLine => Assert.Fail()),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertReadLine("2017-11-25 18:30:00Z");
 
         Assert.True(await sut.MoveNextAsync());
         sut.Current.AssertGetSlots(

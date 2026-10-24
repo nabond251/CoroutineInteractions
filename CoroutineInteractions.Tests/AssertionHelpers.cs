@@ -15,6 +15,14 @@ public static class AssertionHelpers
         actual.AssertReadLine(async readLine =>
             await readLine.Responses.Writer.WriteAsync(response));
 
+    public static void AssertReadLine(
+        this WizardInstruction actual,
+        string expected) =>
+        actual.Switch(
+            commandLineInstruction =>
+            commandLineInstruction.AssertReadLine(expected),
+            reservationsApiInstruction => Assert.Fail());
+
     public static void AssertWriteLine(
         this CommandLineInstruction actual,
         Action<WriteLine> onWriteLine) =>
