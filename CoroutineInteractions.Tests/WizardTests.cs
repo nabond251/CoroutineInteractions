@@ -66,6 +66,7 @@ public class WizardTests
 
         requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());
+        await coroutine;
     }
 
     [Fact]
@@ -112,5 +113,6 @@ public class WizardTests
 
         requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());
+        await coroutine;
     }
 }
