@@ -140,21 +140,13 @@ public class WizardTests
             reservationsApiInstruction => Assert.Fail());
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => Assert.Fail(),
-            reservationsApiInstruction => reservationsApiInstruction.Switch(
-                getSlots => Assert.Fail(),
-                postReservation =>
-                {
-                    var reservation = postReservation.Request;
-                    Assert.Equal(
-                        DateTimeOffset.Parse("2017-11-25 18:30:00Z"),
-                        reservation.Date);
-                    Assert.Equal("Mark Seemann", reservation.Name);
-                    Assert.Equal("mark@example.org", reservation.Email);
-                    Assert.Equal(4, reservation.Quantity);
-                }));
+        sut.Current.AssertPostReservation(new()
+        {
+            Date = DateTimeOffset.Parse("2017-11-25 18:30:00Z"),
+            Name = "Mark Seemann",
+            Email = "mark@example.org",
+            Quantity = 4,
+        });
 
         requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());
@@ -240,29 +232,15 @@ public class WizardTests
             reservationsApiInstruction => Assert.Fail());
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => Assert.Fail(),
-            reservationsApiInstruction => reservationsApiInstruction.Switch(
-                async getSlots =>
-                {
-                    Assert.Equal(DateTimeOffset.Parse("2017-11-25 18:30:00Z"), getSlots.Request);
-                    await getSlots.Responses.Writer.WriteAsync(
-                    [
-                        new() { SlotDate = DateTimeOffset.Parse("2017-11-25"), SeatsLeft = 2 },
-                        new() { SlotDate = DateTimeOffset.Parse("2017-11-25"), SeatsLeft = 1 },
-                    ]);
-                },
-                postReservation => Assert.Fail()));
+        sut.Current.AssertGetSlots(
+            DateTimeOffset.Parse("2017-11-25 18:30:00Z"),
+            [
+                new() { SlotDate = DateTimeOffset.Parse("2017-11-25"), SeatsLeft = 2 },
+                new() { SlotDate = DateTimeOffset.Parse("2017-11-25"), SeatsLeft = 1 },
+            ]);
 
         Assert.True(await sut.MoveNextAsync());
-        instruction = sut.Current;
-        instruction.Switch(
-            commandLineInstruction => commandLineInstruction.Switch(
-                readLine => Assert.Fail(),
-                writeLine => Assert.Equal(
-                    "Only 3 remaining seats.", writeLine.Request)),
-            reservationsApiInstruction => Assert.Fail());
+        sut.Current.AssertWriteLine("Only 3 remaining seats.");
 
         requestChannel.Writer.Complete();
         Assert.False(await sut.MoveNextAsync());

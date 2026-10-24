@@ -1,4 +1,6 @@
-﻿namespace CoroutineInteractions.Tests;
+﻿using CoroutineInteractions.ReservationsApi;
+
+namespace CoroutineInteractions.Tests;
 
 public static class AssertionHelpers
 {
@@ -23,4 +25,42 @@ public static class AssertionHelpers
         string expected) =>
         actual.AssertWriteLine(writeLine => Assert.Equal(
             expected, writeLine.Request));
+
+    public static void AssertWriteLine(
+        this WizardInstruction actual,
+        string expected) =>
+        actual.Switch(
+            commandLineInstruction =>
+            commandLineInstruction.AssertWriteLine(expected),
+            reservationsApiInstruction => Assert.Fail());
+
+    public static void AssertGetSlots(
+        this WizardInstruction actual,
+        DateTimeOffset expected,
+        ICollection<Slot> response) =>
+        actual.Switch(
+            commandLineInstruction => Assert.Fail(),
+            reservationsApiInstruction => reservationsApiInstruction.Switch(
+                async getSlots =>
+                {
+                    Assert.Equal(expected, getSlots.Request);
+                    await getSlots.Responses.Writer.WriteAsync(response);
+                },
+                postReservation => Assert.Fail()));
+
+    public static void AssertPostReservation(
+        this WizardInstruction actual,
+        Reservation expected) =>
+        actual.Switch(
+            commandLineInstruction => Assert.Fail(),
+            reservationsApiInstruction => reservationsApiInstruction.Switch(
+                getSlots => Assert.Fail(),
+                postReservation =>
+                {
+                    var reservation = postReservation.Request;
+                    Assert.Equal(expected.Date, reservation.Date);
+                    Assert.Equal(expected.Name, reservation.Name);
+                    Assert.Equal(expected.Email, reservation.Email);
+                    Assert.Equal(expected.Quantity, reservation.Quantity);
+                }));
 }
