@@ -1,7 +1,7 @@
 ﻿namespace CoroutineInteractions;
 
 public class CoroutineCommandLine(
-        ICommandLineInstructionWriter requestWriter) : ICommandLine
+    ICommandLineInstructionWriter requestWriter) : ICommandLine
 {
     public async Task<string?> ReadLineAsync()
     {

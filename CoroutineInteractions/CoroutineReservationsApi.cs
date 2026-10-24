@@ -3,7 +3,7 @@
 namespace CoroutineInteractions;
 
 public class CoroutineReservationsApi(
-        IReservationsApiInstructionWriter requestWriter) : IReservationsApi
+    IReservationsApiInstructionWriter requestWriter) : IReservationsApi
 {
     public async Task<IEnumerable<Slot>> GetSlotsAsync(DateTimeOffset slotDate)
     {
