@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/Solution Files/">
-    <File Path="../../../Downloads/LICENSE.txt" />
-    <File Path="../../../Downloads/README.md" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
   </Folder>
   <Project Path="CoroutineInteractions.Api/CoroutineInteractions.Api.csproj" Id="7cd548b2-a789-44d6-b0f6-f7547413a656" />
   <Project Path="CoroutineInteractions.Tests/CoroutineInteractions.Tests.csproj" Id="1cfb1fa1-6c00-44e9-84d1-42050fe30e60" />
