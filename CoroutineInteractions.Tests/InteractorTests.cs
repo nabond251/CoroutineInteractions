@@ -26,7 +26,7 @@ public class InteractorTests
             await InteractorCoroutines.ParserAsync(interactor);
             requestChannel.Writer.Complete();
         });
-        ChannelWriter<int>? charWriter = null;
+        Channel<int> charBuffer = Channel.CreateUnbounded<int>();
         List<InteractorCoroutines.Token> tokens = [];
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
@@ -35,20 +35,20 @@ public class InteractorTests
             instruction.Switch(
                 yieldDecompressor =>
                 {
-                    charWriter?.TryWrite(yieldDecompressor.Request);
-                    charWriter?.Complete();
-                    charWriter = null;
+                    charBuffer.Writer.TryWrite(yieldDecompressor.Request);
                 },
-                yieldParser =>
+                async yieldParser =>
                 {
                     decompressor ??= InteractorCoroutines.DecompressorAsync(
                         interactor);
-                    charWriter = yieldParser.Responses.Writer;
+                    var response = await charBuffer.Reader.ReadAsync();
+                    var writer = yieldParser.Responses.Writer;
+                    writer.TryWrite(response);
+                    writer.Complete();
                     if (decompressor.IsCompleted)
                     {
-                        charWriter.TryWrite(InteractorCoroutines.Eof);
-                        charWriter.Complete();
-                        charWriter = null;
+                        charBuffer.Writer.TryWrite(InteractorCoroutines.Eof);
+                        charBuffer.Writer.Complete();
                     }
                 },
                 read =>
