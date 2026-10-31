@@ -21,11 +21,10 @@ public class InteractorTests
         var requestChannel = Channel.CreateUnbounded<InteractorInstruction>();
         var writer = new InteractorInstructionWriter(requestChannel.Writer);
         var interactor = new CoroutineInteractor(writer);
-        var decompressor = InteractorCoroutines.DecompressorAsync(interactor);
         var interaction = Task.Run(async () =>
         {
             await Task.WhenAll(
-                decompressor,
+                InteractorCoroutines.DecompressorAsync(interactor),
                 InteractorCoroutines.ParserAsync(interactor));
             requestChannel.Writer.Complete();
         });
@@ -37,7 +36,8 @@ public class InteractorTests
             instruction.Switch(
                 yieldDecompressor =>
                 {
-                    charBuffer.Writer.TryWrite(yieldDecompressor.Request);
+                    Assert.True(charBuffer.Writer.TryWrite(
+                        yieldDecompressor.Request));
                 },
                 yieldParser =>
                 {
@@ -47,11 +47,6 @@ public class InteractorTests
                         var writer = yieldParser.Responses.Writer;
                         writer.TryWrite(response);
                         writer.Complete();
-                        if (decompressor.IsCompleted)
-                        {
-                            charBuffer.Writer.TryWrite(InteractorCoroutines.Eof);
-                            charBuffer.Writer.Complete();
-                        }
                     });
                 },
                 read =>
