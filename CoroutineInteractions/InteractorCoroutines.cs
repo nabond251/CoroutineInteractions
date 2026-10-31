@@ -1,13 +1,10 @@
-﻿using System.Threading.Channels;
-
-namespace CoroutineInteractions;
+﻿namespace CoroutineInteractions;
 
 public class InteractorCoroutines
 {
     public const int Eof = -1;
 
-    public static async Task DecompressorAsync(
-        IInteractor interactor, ChannelWriter<int> output)
+    public static async Task DecompressorAsync(IInteractor interactor)
     {
         int c, len;
 
@@ -25,27 +22,26 @@ public class InteractorCoroutines
                 c = await interactor.ReadAsync();
                 while (len-- > 0)
                 {
-                    await output.WriteAsync(c);
+                    await interactor.YieldDecompressorAsync(c);
                 }
             }
             else
             {
-                await output.WriteAsync(c);
+                await interactor.YieldDecompressorAsync(c);
             }
         }
 
-        await output.WriteAsync(c);
+        await interactor.YieldDecompressorAsync(c);
     }
 
-    public static async Task ParserAsync(
-        IInteractor interactor, ChannelReader<int> input)
+    public static async Task ParserAsync(IInteractor interactor)
     {
         string value = string.Empty;
         List<Token> tokens = [];
 
         while (true)
         {
-            var c = await input.ReadAsync();
+            var c = await interactor.YieldParserAsync();
 
             if (c == Eof)
             {
@@ -57,7 +53,7 @@ public class InteractorCoroutines
                 do
                 {
                     AddToToken(c);
-                    c = await input.ReadAsync();
+                    c = await interactor.YieldParserAsync();
                 }
                 while (char.IsAsciiLetter((char)c));
                 await GotTokenAsync(TokenType.Word);
