@@ -2,18 +2,15 @@
 
 public class InteractorCoroutines
 {
-    const int Eof = -1;
+    public const int Eof = -1;
 
-    string value = string.Empty;
-    public readonly List<Token> tokens = [];
-
-    public static IEnumerable<int> Decompressor(TextReader input)
+    public static async Task DecompressorAsync(IInteractor interactor)
     {
         int c, len;
 
         while (true)
         {
-            c = input.Read();
+            c = await interactor.ReadAsync();
             if (c == Eof)
             {
                 break;
@@ -21,61 +18,63 @@ public class InteractorCoroutines
 
             if (c == 0xFF)
             {
-                len = input.Read();
-                c = input.Read();
+                len = await interactor.ReadAsync();
+                c = await interactor.ReadAsync();
                 while (len-- > 0)
                 {
-                    yield return c;
+                    await interactor.YieldDecompressorAsync(c);
                 }
             }
             else
             {
-                yield return c;
+                await interactor.YieldDecompressorAsync(c);
             }
         }
 
-        yield return c;
+        await interactor.YieldDecompressorAsync(c);
     }
 
-    public IEnumerable<object?> Parser()
+    public static async Task ParserAsync(IInteractor interactor)
     {
-        var args = Coroutine.Args(new { c = Eof });
-        int c = Eof;
+        string value = string.Empty;
+        List<Token> tokens = [];
+
+        var c = await interactor.YieldParserAsync();
 
         while (true)
         {
             // first char already in c
-            if (Coroutine.Args(ref args)?.c == Eof)
+            if (c == Eof)
             {
                 break;
             }
 
-            if (Coroutine.Args(ref args)?.c is int i && char.IsAsciiLetter((char)(c = i)))
+            if (char.IsAsciiLetter((char)c))
             {
                 do
                 {
                     AddToToken(c);
-                    yield return null;
+                    c = await interactor.YieldParserAsync();
                 }
-                while (Coroutine.Args(ref args)?.c is int j && char.IsAsciiLetter((char)(c = j)));
-                GotToken(TokenType.Word);
+                while (char.IsAsciiLetter((char)c));
+                await GotTokenAsync(TokenType.Word);
             }
 
             AddToToken(c);
-            GotToken(TokenType.Punct);
-            yield return null;
+            await GotTokenAsync(TokenType.Punct);
+            c = await interactor.YieldParserAsync();
         }
-    }
 
-    private void AddToToken(int c)
-    {
-        value += (char)c;
-    }
+        void AddToToken(int c)
+        {
+            value += (char)c;
+        }
 
-    private void GotToken(TokenType type)
-    {
-        tokens.Add(new(type, value));
-        value = string.Empty;
+        async Task GotTokenAsync(TokenType type)
+        {
+            await interactor.WriteAsync(new(type, value));
+            value = string.Empty;
+        }
     }
 
     public record class Token(
