@@ -43,11 +43,10 @@ public class InteractorCoroutines
         string value = string.Empty;
         List<Token> tokens = [];
 
-        var c = await input.ReadAsync();
-
         while (true)
         {
-            // first char already in c
+            var c = await input.ReadAsync();
+
             if (c == Eof)
             {
                 break;
@@ -66,7 +65,11 @@ public class InteractorCoroutines
 
             AddToToken(c);
             await GotTokenAsync(TokenType.Punct);
-            c = await input.ReadAsync();
+
+            if (c == Eof)
+            {
+                break;
+            }
         }
 
         void AddToToken(int c)
