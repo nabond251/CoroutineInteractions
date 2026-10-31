@@ -24,8 +24,8 @@ public class InteractorTests
         var interaction = Task.Run(async () =>
         {
             await Task.WhenAll(
-                InteractorCoroutines.DecompressorAsync(interactor),
-                InteractorCoroutines.ParserAsync(interactor));
+                InteractorCoroutines.DecompressorAsync(interactor, charBuffer.Writer),
+                InteractorCoroutines.ParserAsync(interactor, charBuffer.Reader));
             requestChannel.Writer.Complete();
         });
         List<InteractorCoroutines.Token> tokens = [];
@@ -34,21 +34,6 @@ public class InteractorTests
         await foreach (var instruction in requestChannel.Reader.ReadAllAsync())
         {
             instruction.Switch(
-                yieldDecompressor =>
-                {
-                    Assert.True(charBuffer.Writer.TryWrite(
-                        yieldDecompressor.Request));
-                },
-                yieldParser =>
-                {
-                    Task.Run(async () =>
-                    {
-                        var response = await charBuffer.Reader.ReadAsync();
-                        var writer = yieldParser.Responses.Writer;
-                        writer.TryWrite(response);
-                        writer.Complete();
-                    });
-                },
                 read =>
                 {
                     var response = input.Read();

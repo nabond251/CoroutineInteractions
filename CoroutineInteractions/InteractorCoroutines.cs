@@ -1,10 +1,13 @@
-﻿namespace CoroutineInteractions;
+﻿using System.Threading.Channels;
+
+namespace CoroutineInteractions;
 
 public class InteractorCoroutines
 {
     public const int Eof = -1;
 
-    public static async Task DecompressorAsync(IInteractor interactor)
+    public static async Task DecompressorAsync(
+        IInteractor interactor, ChannelWriter<int> output)
     {
         int c, len;
 
@@ -22,24 +25,25 @@ public class InteractorCoroutines
                 c = await interactor.ReadAsync();
                 while (len-- > 0)
                 {
-                    await interactor.YieldDecompressorAsync(c);
+                    await output.WriteAsync(c);
                 }
             }
             else
             {
-                await interactor.YieldDecompressorAsync(c);
+                await output.WriteAsync(c);
             }
         }
 
-        await interactor.YieldDecompressorAsync(c);
+        await output.WriteAsync(c);
     }
 
-    public static async Task ParserAsync(IInteractor interactor)
+    public static async Task ParserAsync(
+        IInteractor interactor, ChannelReader<int> input)
     {
         string value = string.Empty;
         List<Token> tokens = [];
 
-        var c = await interactor.YieldParserAsync();
+        var c = await input.ReadAsync();
 
         while (true)
         {
@@ -54,7 +58,7 @@ public class InteractorCoroutines
                 do
                 {
                     AddToToken(c);
-                    c = await interactor.YieldParserAsync();
+                    c = await input.ReadAsync();
                 }
                 while (char.IsAsciiLetter((char)c));
                 await GotTokenAsync(TokenType.Word);
@@ -62,7 +66,7 @@ public class InteractorCoroutines
 
             AddToToken(c);
             await GotTokenAsync(TokenType.Punct);
-            c = await interactor.YieldParserAsync();
+            c = await input.ReadAsync();
         }
 
         void AddToToken(int c)
