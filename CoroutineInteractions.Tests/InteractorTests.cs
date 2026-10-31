@@ -14,19 +14,21 @@ public class InteractorTests
     public async Task DecompressorConnectsToParserAsync(
         string inputText, string expectedTokens)
     {
+        Channel<int> charBuffer = Channel.CreateUnbounded<int>();
         var byteArray = Encoding.UTF8.GetBytes(inputText);
         var inputStream = new MemoryStream(byteArray);
         using var input = new StreamReader(inputStream);
         var requestChannel = Channel.CreateUnbounded<InteractorInstruction>();
-        Task? decompressor = null;
         var writer = new InteractorInstructionWriter(requestChannel.Writer);
         var interactor = new CoroutineInteractor(writer);
-        var parser = Task.Run(async () =>
+        var decompressor = InteractorCoroutines.DecompressorAsync(interactor);
+        var interaction = Task.Run(async () =>
         {
-            await InteractorCoroutines.ParserAsync(interactor);
+            await Task.WhenAll(
+                decompressor,
+                InteractorCoroutines.ParserAsync(interactor));
             requestChannel.Writer.Complete();
         });
-        Channel<int> charBuffer = Channel.CreateUnbounded<int>();
         List<InteractorCoroutines.Token> tokens = [];
         var sut = requestChannel.Reader.ReadAllAsync().GetAsyncEnumerator();
 
@@ -37,19 +39,20 @@ public class InteractorTests
                 {
                     charBuffer.Writer.TryWrite(yieldDecompressor.Request);
                 },
-                async yieldParser =>
+                yieldParser =>
                 {
-                    decompressor ??= InteractorCoroutines.DecompressorAsync(
-                        interactor);
-                    var response = await charBuffer.Reader.ReadAsync();
-                    var writer = yieldParser.Responses.Writer;
-                    writer.TryWrite(response);
-                    writer.Complete();
-                    if (decompressor.IsCompleted)
+                    Task.Run(async () =>
                     {
-                        charBuffer.Writer.TryWrite(InteractorCoroutines.Eof);
-                        charBuffer.Writer.Complete();
-                    }
+                        var response = await charBuffer.Reader.ReadAsync();
+                        var writer = yieldParser.Responses.Writer;
+                        writer.TryWrite(response);
+                        writer.Complete();
+                        if (decompressor.IsCompleted)
+                        {
+                            charBuffer.Writer.TryWrite(InteractorCoroutines.Eof);
+                            charBuffer.Writer.Complete();
+                        }
+                    });
                 },
                 read =>
                 {
@@ -64,12 +67,7 @@ public class InteractorTests
                 });
         }
 
-        if (decompressor is not null)
-        {
-            await decompressor;
-        }
-
-        await parser;
+        await interaction;
 
         var expected = expectedTokens
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
